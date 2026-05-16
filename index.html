@@ -7,6 +7,27 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f0c29">
 <title>KELAS 11 TEKNOLOGI 🚀</title>
+<script>
+// Auth proxy — harus di head agar tersedia sebelum HTML dirender
+function _authProxy(fnName){
+  var args = Array.prototype.slice.call(arguments, 1);
+  if(typeof window[fnName]==='function'){
+    window[fnName].apply(null, args);
+  } else {
+    var tries=0;
+    var iv=setInterval(function(){
+      tries++;
+      if(typeof window[fnName]==='function'){
+        clearInterval(iv);
+        window[fnName].apply(null, args);
+      } else if(tries>100){
+        clearInterval(iv);
+        console.error('Fungsi '+fnName+' tidak ditemukan setelah 10 detik');
+      }
+    },100);
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
