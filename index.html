@@ -511,31 +511,18 @@ select.input-field option{background:#1a1740;color:#fff}
       </div>
 
       <div class="sec-title"><i class="ti ti-bell"></i> Pengumuman Terbaru</div>
-      <div class="card">
-        <div class="peng-top">
-          <div class="peng-ava" style="background:linear-gradient(135deg,#FF6B6B,#FF8E53)">R</div>
-          <div><div class="peng-by">Bu Retno – Wali Kelas</div><div class="peng-date">Hari ini, 08:30</div></div>
-          <span class="badge b-red" style="margin-left:auto">Penting</span>
+      <div id="db-pengumuman-preview">
+        <div class="empty-state" style="padding:20px">
+          <div class="es-icon">📢</div>
+          <div class="es-title">Belum ada pengumuman</div>
         </div>
-        <div class="peng-title">Pembayaran Kas Bulan Juni</div>
-        <div class="peng-body">Reminder! Pembayaran kas kelas bulan Juni paling lambat Jumat, 20 Juni 2025. Hubungi bendahara kelas. 🙏</div>
       </div>
       <div class="sec-title"><i class="ti ti-clipboard-list"></i> Tugas Deadline Dekat</div>
-      <div class="tugas-item">
-        <div class="tcheck" onclick="toggleCheck(this)"><i class="ti ti-check"></i></div>
-        <div class="tugas-body">
-          <div class="tname">Laporan Praktikum Jaringan Komputer</div>
-          <div class="tmeta">Pak Budi · Informatika</div>
+      <div id="db-tugas-preview">
+        <div class="empty-state" style="padding:20px">
+          <div class="es-icon">📚</div>
+          <div class="es-title">Belum ada tugas</div>
         </div>
-        <span class="badge b-red">Besok</span>
-      </div>
-      <div class="tugas-item">
-        <div class="tcheck done" onclick="toggleCheck(this)"><i class="ti ti-check"></i></div>
-        <div class="tugas-body">
-          <div class="tname" style="text-decoration:line-through;color:var(--text3)">Essay Revolusi Industri 4.0</div>
-          <div class="tmeta">Bu Sari · Bahasa Indonesia</div>
-        </div>
-        <span class="badge b-green">Selesai</span>
       </div>
       <div class="watermark">Supported by <span>D.D Candra 2026</span></div>
     </div>
@@ -1025,15 +1012,48 @@ select.input-field option{background:#1a1740;color:#fff}
 <div class="overlay" id="overlay-sheet-more" onclick="closeSheet(event,'sheet-more')">
   <div class="bottom-sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Menu Lainnya</div>
+    <!-- Header dengan notifikasi -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="sheet-title" style="margin-bottom:0">Menu Lainnya</div>
+      <!-- Bell notifikasi approval (hanya walikelas) -->
+      <div id="notif-bell-btn" style="display:none;position:relative;cursor:pointer" onclick="closeSheet2('sheet-more');showSheet('sheet-approval-list')">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(234,179,8,.15);border:1px solid rgba(234,179,8,.3);display:flex;align-items:center;justify-content:center">
+          <i class="ti ti-bell" style="font-size:20px;color:#fbbf24"></i>
+        </div>
+        <div id="notif-bell-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center">0</div>
+      </div>
+    </div>
+
     <div class="quick-grid">
-      <div class="qa" onclick="closeSheet2('sheet-more');goTo('tugas')"><span class="qa-icon">📚</span><div class="qa-lbl">Tugas</div></div>
-      <div class="qa" onclick="closeSheet2('sheet-more');goTo('presensi')"><span class="qa-icon">✅</span><div class="qa-lbl">Presensi</div></div>
-      <div class="qa" onclick="closeSheet2('sheet-more');goTo('nilai')"><span class="qa-icon">⭐</span><div class="qa-lbl">Nilai</div></div>
-      <div class="qa" onclick="closeSheet2('sheet-more');goTo('pengumuman')"><span class="qa-icon">📢</span><div class="qa-lbl">Pengumuman</div></div>
-      <div class="qa" onclick="showSheet('sheet-profil');closeSheet2('sheet-more')"><span class="qa-icon">👤</span><div class="qa-lbl">Profil</div></div>
-      <div class="qa" onclick="closeSheet2('sheet-more');goTo('jadwal')"><span class="qa-icon">📅</span><div class="qa-lbl">Jadwal</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');goTo('tugas')"><span class="qa-icon" id="more-icon-tugas">📚</span><div class="qa-lbl">Tugas</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');goTo('nilai')"><span class="qa-icon" id="more-icon-nilai">⭐</span><div class="qa-lbl">Nilai</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');goTo('pengumuman')"><span class="qa-icon" id="more-icon-pengumuman">📢</span><div class="qa-lbl">Pengumuman</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');goTo('jadwal')"><span class="qa-icon" id="more-icon-jadwal">📅</span><div class="qa-lbl">Jadwal</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');showSheet('sheet-profil')"><span class="qa-icon">👤</span><div class="qa-lbl">Profil</div></div>
       <div class="qa" onclick="closeSheet2('sheet-more');showSheet('sheet-pengaturan')"><span class="qa-icon">⚙️</span><div class="qa-lbl">Pengaturan</div></div>
+    </div>
+
+    <!-- Logout -->
+    <div style="margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn btn-danger" style="width:100%;padding:13px;border-radius:14px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="konfirmasiLogout()">
+        <i class="ti ti-logout"></i> Keluar dari Akun
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ SHEET: Konfirmasi Logout ══════ -->
+<div class="overlay" id="overlay-sheet-konfirmasi-logout" onclick="closeSheet(event,'sheet-konfirmasi-logout')">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div style="text-align:center;padding:8px 0 16px">
+      <div style="font-size:44px;margin-bottom:12px">👋</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Keluar dari Akun?</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6">Kamu akan keluar dan perlu login<br>kembali untuk menggunakan aplikasi.</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1;padding:13px;border-radius:14px" onclick="closeSheet2('sheet-konfirmasi-logout')">Batal</button>
+      <button class="btn btn-danger" style="flex:1;padding:13px;border-radius:14px" onclick="doLogout();closeSheet2('sheet-konfirmasi-logout')">Ya, Keluar</button>
     </div>
   </div>
 </div>
@@ -1804,147 +1824,25 @@ let currentPanel='dashboard';
 let tugasFilter='all';
 
 // Data siswa (bisa di-replace dari upload Excel)
-let dataSiswa=[
-  {no:1,nama:'Rizki Ananda',nisn:'0045001001',jk:'L'},
-  {no:2,nama:'Dinda Maharani',nisn:'0045001002',jk:'P'},
-  {no:3,nama:'Bagas Pratama',nisn:'0045001003',jk:'L'},
-  {no:4,nama:'Siti Rahayu',nisn:'0045001004',jk:'P'},
-  {no:5,nama:'Ahmad Fauzi',nisn:'0045001005',jk:'L'},
-  {no:6,nama:'Nadia Putri',nisn:'0045001006',jk:'P'},
-  {no:7,nama:'Daffa Ibrahim',nisn:'0045001007',jk:'L'},
-  {no:8,nama:'Aulia Rahma',nisn:'0045001008',jk:'P'},
-  {no:9,nama:'Reza Firmansyah',nisn:'0045001009',jk:'L'},
-  {no:10,nama:'Maulana Arif',nisn:'0045001010',jk:'L'},
-  {no:11,nama:'Cindy Lestari',nisn:'0045001011',jk:'P'},
-  {no:12,nama:'Fikri Haikal',nisn:'0045001012',jk:'L'},
-  {no:13,nama:'Putri Andini',nisn:'0045001013',jk:'P'},
-  {no:14,nama:'Yusuf Akbar',nisn:'0045001014',jk:'L'},
-  {no:15,nama:'Laila Nurjanah',nisn:'0045001015',jk:'P'},
-  {no:16,nama:'Kevin Santoso',nisn:'0045001016',jk:'L'},
-  {no:17,nama:'Anisa Dewi',nisn:'0045001017',jk:'P'},
-  {no:18,nama:'Bima Saputra',nisn:'0045001018',jk:'L'},
-  {no:19,nama:'Tiara Wulandari',nisn:'0045001019',jk:'P'},
-  {no:20,nama:'Galih Pratama',nisn:'0045001020',jk:'L'},
-  {no:21,nama:'Mega Kurnia',nisn:'0045001021',jk:'P'},
-  {no:22,nama:'Ilham Maulid',nisn:'0045001022',jk:'L'},
-  {no:23,nama:'Zahra Amelia',nisn:'0045001023',jk:'P'},
-  {no:24,nama:'Raffi Pratama',nisn:'0045001024',jk:'L'},
-  {no:25,nama:'Hana Salsabila',nisn:'0045001025',jk:'P'},
-  {no:26,nama:'Wahyu Setiawan',nisn:'0045001026',jk:'L'},
-  {no:27,nama:'Nindy Arumi',nisn:'0045001027',jk:'P'},
-  {no:28,nama:'Farhan Ilham',nisn:'0045001028',jk:'L'},
-  {no:29,nama:'Aryo Gunawan',nisn:'0045001029',jk:'L'},
-  {no:30,nama:'Shinta Melati',nisn:'0045001030',jk:'P'},
-  {no:31,nama:'Denny Kusuma',nisn:'0045001031',jk:'L'},
-  {no:32,nama:'Prita Handayani',nisn:'0045001032',jk:'P'},
-  {no:33,nama:'Satrio Wibowo',nisn:'0045001033',jk:'L'},
-  {no:34,nama:'Ayu Puspita',nisn:'0045001034',jk:'P'},
-];
-
-// Absensi hari ini: {nisn: 'H'|'S'|'I'|'A'|''}
+// ─── DATA (kosong — diisi dari Firebase) ───
+let dataSiswa=[];
 let absensiHariIni={};
-
-// Data pembayaran kas per siswa (bulan-bulan yg sudah bayar)
-const bulanKas=['Jan','Feb','Mar','Apr','Mei','Jun'];
-let pembayaranKas={
-  '0045001001':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001002':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001003':['Jan','Feb','Mar','Apr','Mei'],
-  '0045001004':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001005':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001006':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001007':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001008':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001009':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001010':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001011':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001012':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001013':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001014':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001015':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001016':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001017':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001018':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001019':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001020':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001021':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001022':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001023':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001024':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001025':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001026':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001027':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001028':['Jan','Feb','Mar','Apr','Mei','Jun'],
-  '0045001029':['Jan','Feb','Mar','Apr'],
-  '0045001030':['Jan','Feb','Mar','Apr'],
-  '0045001031':['Jan','Feb','Mar'],
-  '0045001032':['Jan','Feb','Mar','Apr','Mei'],
-  '0045001033':['Jan','Feb','Mar','Apr'],
-  '0045001034':['Jan','Feb','Mar','Apr'],
-};
-
-// Data transaksi kas
-let kasTransaksi=[
-  {id:1,jenis:'masuk',nama:'Kas Bulan Jun – Batch 1 (28 siswa)',kategori:'Kas Bulanan',nominal:560000,tanggal:'2025-06-01',keterangan:'Pembayaran kas bulan Juni'},
-  {id:2,jenis:'keluar',nama:'Beli Spidol & Penghapus Papan',kategori:'ATK',nominal:35000,tanggal:'2025-06-03',keterangan:'Toko Maju Jaya'},
-  {id:3,jenis:'masuk',nama:'Iuran Kegiatan Perpisahan',kategori:'Iuran Kegiatan',nominal:120000,tanggal:'2025-05-28',keterangan:''},
-  {id:4,jenis:'keluar',nama:'Konsumsi Acara HUT Kelas',kategori:'Konsumsi',nominal:120000,tanggal:'2025-05-28',keterangan:'Nasi kotak 34 porsi'},
-  {id:5,jenis:'masuk',nama:'Kas Bulan Mei – 34 Siswa',kategori:'Kas Bulanan',nominal:680000,tanggal:'2025-05-01',keterangan:''},
-  {id:6,jenis:'keluar',nama:'Dekorasi Kelas',kategori:'Dekorasi',nominal:75000,tanggal:'2025-04-15',keterangan:'Balon, kertas warna'},
-  {id:7,jenis:'masuk',nama:'Kas Bulan Apr – 34 Siswa',kategori:'Kas Bulanan',nominal:680000,tanggal:'2025-04-01',keterangan:''},
-  {id:8,jenis:'keluar',nama:'Hadiah Lomba Internal',kategori:'Lain-lain',nominal:50000,tanggal:'2025-04-10',keterangan:'Voucher 3 pemenang'},
-];
+const bulanKas=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+let pembayaranKas={};
+let kasTransaksi=[];
+let tugasData=[];
 
 // Nilai data — managed by renderNilai()
 
 const jadwalData={
   '0':[],
-  '1':[
-    {jam:'07.00–07.45',nama:'Upacara / PKK',guru:'Bu Wati',ruang:'Lap. Upacara',warna:'#f97316'},
-    {jam:'08.00–09.20',nama:'Informatika',guru:'Pak Budi',ruang:'Lab Komputer 2',warna:'#4ECDC4'},
-    {jam:'09.20–10.40',nama:'Matematika',guru:'Pak Hendra',ruang:'Kelas XI-T',warna:'#3b82f6'},
-    {jam:'10.55–12.15',nama:'Bahasa Indonesia',guru:'Bu Sari',ruang:'Kelas XI-T',warna:'#a855f7'},
-    {jam:'13.00–14.20',nama:'Fisika',guru:'Pak Rudi',ruang:'Lab Fisika',warna:'#FF6B6B'},
-    {jam:'14.20–15.00',nama:'Bahasa Inggris',guru:'Bu Dewi',ruang:'Kelas XI-T',warna:'#22c55e'},
-  ],
-  '2':[
-    {jam:'07.00–08.20',nama:'Matematika',guru:'Pak Hendra',ruang:'Kelas XI-T',warna:'#3b82f6'},
-    {jam:'08.20–09.40',nama:'Desain Grafis',guru:'Pak Andi',ruang:'Lab DKV',warna:'#ec4899'},
-    {jam:'10.00–11.20',nama:'Fisika',guru:'Pak Rudi',ruang:'Lab Fisika',warna:'#FF6B6B'},
-    {jam:'11.20–12.40',nama:'PKK',guru:'Bu Wati',ruang:'Kelas XI-T',warna:'#f97316'},
-    {jam:'13.30–14.50',nama:'BK',guru:'Bu Hani',ruang:'Ruang BK',warna:'#6b7280'},
-  ],
-  '3':[
-    {jam:'07.00–08.20',nama:'Bahasa Inggris',guru:'Bu Dewi',ruang:'Kelas XI-T',warna:'#22c55e'},
-    {jam:'08.20–09.40',nama:'Informatika',guru:'Pak Budi',ruang:'Lab Komputer 2',warna:'#4ECDC4'},
-    {jam:'10.00–11.20',nama:'Desain Grafis',guru:'Pak Andi',ruang:'Lab DKV',warna:'#ec4899'},
-    {jam:'11.20–12.40',nama:'Matematika',guru:'Pak Hendra',ruang:'Kelas XI-T',warna:'#3b82f6'},
-  ],
-  '4':[
-    {jam:'07.00–08.20',nama:'PKK',guru:'Bu Wati',ruang:'Kelas XI-T',warna:'#f97316'},
-    {jam:'08.20–09.40',nama:'Bahasa Indonesia',guru:'Bu Sari',ruang:'Kelas XI-T',warna:'#a855f7'},
-    {jam:'10.00–11.20',nama:'Informatika',guru:'Pak Budi',ruang:'Lab Komputer 2',warna:'#4ECDC4'},
-    {jam:'11.20–12.40',nama:'Fisika',guru:'Pak Rudi',ruang:'Lab Fisika',warna:'#FF6B6B'},
-    {jam:'13.30–15.00',nama:'Ekstrakurikuler',guru:'–',ruang:'Sesuai pilihan',warna:'#eab308'},
-  ],
-  '5':[
-    {jam:'07.00–08.20',nama:'Bahasa Indonesia',guru:'Bu Sari',ruang:'Kelas XI-T',warna:'#a855f7'},
-    {jam:'08.20–09.40',nama:'PKK',guru:'Bu Wati',ruang:'Lab PKK',warna:'#f97316'},
-    {jam:'10.00–11.00',nama:'Penjaskes',guru:'Pak Yoga',ruang:'Lap. Olahraga',warna:'#22c55e'},
-  ],
-  '6':[
-    {jam:'07.00–08.30',nama:'Praktikum Informatika',guru:'Pak Budi',ruang:'Lab Komputer 2',warna:'#4ECDC4'},
-    {jam:'08.30–10.00',nama:'Desain Grafis (Praktik)',guru:'Pak Andi',ruang:'Lab DKV',warna:'#ec4899'},
-  ],
+  '1':[],
+  '2':[],
+  '3':[],
+  '4':[],
+  '5':[],
+  '6':[],
 };
-
-let tugasData=[
-  {id:1,nama:'Laporan Praktikum Jaringan Komputer',mapel:'Informatika – Pak Budi',deadline:'Besok',prioritas:'high',done:false,desc:'Laporan praktikum setting IP statik dan dinamis'},
-  {id:2,nama:'Essay Revolusi Industri 4.0',mapel:'Bahasa Indonesia – Bu Sari',deadline:'10 Jun',prioritas:'normal',done:true,desc:'Min 500 kata, font TNR 12pt'},
-  {id:3,nama:'Soal Latihan Matematika Bab 7',mapel:'Matematika – Pak Hendra',deadline:'12 Jun',prioritas:'normal',done:false,desc:'Kerjakan nomor 1-20 ganjil'},
-  {id:4,nama:'Presentasi PKK – Kewirausahaan',mapel:'PKK – Bu Wati',deadline:'15 Jun',prioritas:'high',done:false,desc:'Kelompok 3 presentasi di minggu ke-3'},
-  {id:5,nama:'Gambar Teknik Perspektif',mapel:'Desain Grafis – Pak Andi',deadline:'20 Jun',prioritas:'low',done:false,desc:'Gambar perspektif 1 titik hilang'},
-];
 
 // Color palettes
 const gradPalette=[
@@ -1957,9 +1855,75 @@ function initials(nama){return nama.split(' ').map(x=>x[0]).slice(0,2).join('').
 function rupiah(n){return'Rp '+n.toLocaleString('id-ID')}
 function rupiahK(n){return n>=1000000?'Rp '+(n/1000000).toFixed(1).replace('.0','')+'jt':n>=1000?'Rp '+(n/1000).toFixed(0)+'K':'Rp '+n}
 
-// ═══════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════
+// ─── LOGOUT dengan konfirmasi ───
+function konfirmasiLogout(){
+  closeSheet2('sheet-more');
+  setTimeout(()=>showSheet('sheet-konfirmasi-logout'), 200);
+}
+window.konfirmasiLogout = konfirmasiLogout;
+
+// ─── Update lonceng notifikasi di sheet-more ───
+function updateBellNotif(){
+  const count = Object.keys(pendingApprovals).length;
+  const bellBtn = document.getElementById('notif-bell-btn');
+  const bellBadge = document.getElementById('notif-bell-badge');
+  if(bellBtn) bellBtn.style.display = currentRole==='walikelas' ? 'block' : 'none';
+  if(bellBadge){
+    if(count>0){
+      bellBadge.style.display='flex';
+      bellBadge.textContent=count;
+    } else {
+      bellBadge.style.display='none';
+    }
+  }
+}
+
+// ─── Render preview di dashboard ───
+function renderDashboardPreview(){
+  // Pengumuman terbaru (max 2)
+  const dbPeng = document.getElementById('db-pengumuman-preview');
+  if(dbPeng){
+    const latest = pengumumanData.slice(0,2);
+    if(latest.length){
+      dbPeng.innerHTML = latest.map(p=>`
+        <div class="peng-item" style="margin-bottom:8px">
+          <div class="peng-top">
+            <div class="peng-ava" style="background:${p.warna}">${p.inisial}</div>
+            <div><div class="peng-by">${p.dari}</div><div class="peng-date">${p.waktu}</div></div>
+            <span class="badge ${katBadge[p.kat]||'b-blue'}" style="margin-left:auto">${katLabel[p.kat]||p.kat}</span>
+          </div>
+          <div class="peng-title">${p.judul}</div>
+        </div>
+      `).join('');
+    } else {
+      dbPeng.innerHTML=`<div class="empty-state" style="padding:16px"><div class="es-icon">📢</div><div class="es-title">Belum ada pengumuman</div></div>`;
+    }
+  }
+  // Tugas aktif (max 3, deadline terdekat)
+  const dbTugas = document.getElementById('db-tugas-preview');
+  if(dbTugas){
+    const aktif = tugasData.filter(t=>!t.done).slice(0,3);
+    if(aktif.length){
+      dbTugas.innerHTML = aktif.map(t=>`
+        <div class="tugas-item" style="margin-bottom:6px">
+          <div class="tcheck${t.done?' done':''}" onclick="toggleTugas(${t.id})"><i class="ti ti-check"></i></div>
+          <div class="tugas-body">
+            <div class="tname">${t.nama}</div>
+            <div class="tmeta">${t.mapel} · ⏰ ${t.deadline}</div>
+          </div>
+          <span class="badge ${t.prioritas==='high'?'b-red':t.prioritas==='low'?'b-green':'b-yellow'}">${t.deadline}</span>
+        </div>
+      `).join('');
+    } else {
+      dbTugas.innerHTML=`<div class="empty-state" style="padding:16px"><div class="es-icon">✅</div><div class="es-title">Tidak ada tugas aktif</div></div>`;
+    }
+  }
+  // Update avg nilai di hero
+  const avgEl = document.getElementById('db-avg-nilai');
+  if(avgEl && typeof nilaiData!=='undefined' && nilaiData.length){
+    avgEl.textContent = hitungRata();
+  }
+}
 function goTo(panel){
   document.getElementById('panel-'+currentPanel).classList.remove('active');
   document.getElementById('panel-'+panel).classList.add('active');
@@ -3231,6 +3195,7 @@ function tambahTugas(){
   document.getElementById('tugas-deadline-inp').value='';
   closeSheet2('sheet-tugas');
   renderTugas();
+  renderDashboardPreview();
   showToast('✅ Tugas "'+nama.substring(0,20)+(nama.length>20?'…':'')+'" ditambahkan!');
 }
 
@@ -3247,12 +3212,7 @@ function toggleCheck(el){el.classList.toggle('done')}
 // ═══════════════════════════════════════════
 // PENGUMUMAN  
 // ═══════════════════════════════════════════
-let pengumumanData=[
-  {id:1,dari:'Bu Retno – Wali Kelas',judul:'Pembayaran Kas Bulan Juni',isi:'Reminder! Pembayaran kas kelas bulan Juni paling lambat Jumat, 20 Juni 2025. Segera hubungi bendahara kelas. 🙏',kat:'penting',waktu:'Hari ini, 08:30',inisial:'R',warna:'linear-gradient(135deg,#FF6B6B,#FF8E53)',pin:false},
-  {id:2,dari:'Pak Budi – Informatika',judul:'Perubahan Jadwal Praktikum',isi:'Praktikum Jaringan Komputer minggu depan dipindah ke Rabu pukul 09.00. Pastikan semua bawa laptop dan kabel LAN. 💻',kat:'info',waktu:'Kemarin, 14:00',inisial:'B',warna:'linear-gradient(135deg,#3b82f6,#1d4ed8)',pin:false},
-  {id:3,dari:'OSIS – Koordinator',judul:'Lomba Coding Tingkat Kota 🏆',isi:'OSIS membuka pendaftaran lomba coding tingkat kota. Daftar sebelum 10 Juni. Ayo semangat ikut!',kat:'kegiatan',waktu:'2 Jun 2025',inisial:'O',warna:'linear-gradient(135deg,#22c55e,#15803d)',pin:false},
-  {id:4,dari:'Ketua Kelas – Rizki',judul:'Rapat Kelas Persiapan HUT Sekolah',isi:'Rapat kelas Sabtu, 7 Juni jam 09.00 di kelas. Wajib hadir semua anggota kelas!',kat:'kelas',waktu:'30 Mei 2025',inisial:'K',warna:'linear-gradient(135deg,#a855f7,#7c3aed)',pin:false},
-];
+let pengumumanData=[];
 let pengFilter='semua';
 
 const katBadge={penting:'b-red',info:'b-blue',kegiatan:'b-yellow',kelas:'b-purple'};
@@ -3315,6 +3275,7 @@ function buatPengumuman(){
   document.getElementById('peng-isi-inp').value='';
   closeSheet2('sheet-buat-peng');
   renderPengumuman();
+  renderDashboardPreview();
   showToast('📢 Pengumuman "'+judul.substring(0,20)+'" dikirim!');
 }
 
@@ -3330,28 +3291,7 @@ function hapusPeng(id){
 // ═══════════════════════════════════════════
 // CHAT  
 // ═══════════════════════════════════════════
-let topikData=[
-  {id:1,nama:'📚 Belajar Bareng',desc:'Diskusi soal & materi pelajaran',warna:'rgba(255,107,107,.2)',unread:3,msgs:[
-    {from:'Rizki Ananda',me:false,text:'Halo semuanya! Ada yang udah ngerjain soal nomor 5? Susah banget 😭',time:'09:30'},
-    {from:'Dinda Maharani',me:false,text:'Belum, aku juga bingung. Mungkin kita cari di buku halaman 87?',time:'09:33'},
-    {from:'Bagas Pratama',me:false,text:'Coba lihat rangkuman bab 5, ada di sana kok 📖',time:'09:36'},
-    {from:'Kamu',me:true,text:'Makasih Bagas! BTW kita mau belajar bareng gak sabtu ini?',time:'09:40'},
-    {from:'Rizki Ananda',me:false,text:'Boleh! Di perpus aja jam 9 gimana?',time:'09:42'},
-  ]},
-  {id:2,nama:'📢 Pengumuman Kelas',desc:'Info resmi dari ketua & wali kelas',warna:'rgba(78,205,196,.2)',unread:1,msgs:[
-    {from:'Bu Retno',me:false,text:'Jangan lupa bayar kas ya anak-anak, deadline Jumat ini 🙏',time:'08:30'},
-    {from:'Rizki (Ketua)',me:false,text:'Reminder teman-teman: rapat kelas Sabtu jam 9 pagi!',time:'08:45'},
-  ]},
-  {id:3,nama:'🎮 Santai & Fun',desc:'Obrolan santai & hiburan',warna:'rgba(168,85,247,.2)',unread:0,msgs:[
-    {from:'Dinda Maharani',me:false,text:'Hahaha video tadi parah banget wkwkwk',time:'Kemarin'},
-    {from:'Kamu',me:true,text:'Iya lucu banget 😂',time:'Kemarin'},
-  ]},
-  {id:4,nama:'💻 Proyek IT Kelas',desc:'Kolaborasi proyek & tugas IT',warna:'rgba(59,130,246,.2)',unread:8,msgs:[
-    {from:'Bagas Pratama',me:false,text:'File desain UI sudah saya upload ke drive ya',time:'Kemarin'},
-    {from:'Fikri Haikal',me:false,text:'Noted, langsung saya review',time:'Kemarin'},
-    {from:'Kamu',me:true,text:'Gas, besok kita meeting online jam 7 malam ya?',time:'Kemarin'},
-  ]},
-];
+let topikData=[];
 let activeTopikId=null;
 let selectedWarna='rgba(255,107,107,.2)';
 
@@ -3915,6 +3855,7 @@ function masukApp(){
   document.getElementById('pending-banner').style.display = 'none';
   updateUIByRole();
   syncFromFirebase();
+  renderDashboardPreview();
   // Walikelas: listen approvals realtime + seed profil jika belum ada
   if(currentRole === 'walikelas'){
     listenApprovals();
@@ -4249,7 +4190,7 @@ function updateApprovalUI(){
     if(countText) countText.textContent = count+' siswa menunggu persetujuan sebagai pengurus';
   }
   if(sheetCount) sheetCount.textContent = count+' pending';
-
+  updateBellNotif();
   // Render list di sheet
   renderApprovalList();
 }
