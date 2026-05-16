@@ -400,7 +400,7 @@ select.input-field option{background:#1a1740;color:#fff}
     <!-- Tabs -->
     <div class="auth-tabs">
       <div class="auth-tab active" id="tab-masuk" id="tab-masuk-div">Masuk</div>
-      <div class="auth-tab" id="tab-daftar">Daftar</div>
+      <div class="auth-tab" id="tab-daftar" onclick="_authProxy('authSwitchTab','daftar')">Daftar</div>
     </div>
 
     <!-- Error box -->
@@ -416,14 +416,14 @@ select.input-field option{background:#1a1740;color:#fff}
       </select>
       <input class="auth-input" id="login-id" placeholder="NISN / Email pengurus" type="text" autocomplete="username">
       <input class="auth-input" id="login-pass" placeholder="Password (min 8 digit)" type="password" autocomplete="current-password">
-      <button class="auth-btn" id="btn-login">Masuk →</button>
+      <button class="auth-btn" id="btn-login" onclick="_authProxy('doLogin')">Masuk →</button>
       <div class="auth-divider">atau</div>
-      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer" id="link-ke-daftar" style="cursor:pointer">Belum punya akun? <span style="color:#FF6B6B;font-weight:700">Daftar di sini</span></div>
+      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer" onclick="_authProxy('authSwitchTab','daftar')" style="cursor:pointer">Belum punya akun? <span style="color:#FF6B6B;font-weight:700">Daftar di sini</span></div>
     </div>
 
     <!-- ─── FORM DAFTAR ─── -->
     <div id="form-daftar" style="display:none">
-      <select class="auth-role-select" id="daftar-role">
+      <select class="auth-role-select" id="daftar-role" onchange="_authProxy('onDaftarRoleChange')">
         <option value="siswa">👤 Daftar sebagai Siswa</option>
         <option value="pengurus">📋 Daftar sebagai Pengurus</option>
         <option value="bendahara">💰 Daftar sebagai Bendahara</option>
@@ -434,7 +434,7 @@ select.input-field option{background:#1a1740;color:#fff}
       <input class="auth-input" id="daftar-pass" placeholder="Password (min 8 karakter)" type="password">
       <input class="auth-input" id="daftar-pass2" placeholder="Konfirmasi Password" type="password">
       <input class="auth-input" id="daftar-kode" placeholder="Kode Undangan Kelas" type="text">
-      <button class="auth-btn" id="btn-daftar">Buat Akun →</button>
+      <button class="auth-btn" id="btn-daftar" onclick="_authProxy('doDaftar')">Buat Akun →</button>
       <div class="auth-divider">atau</div>
       <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer" id="tab-masuk-div">Sudah punya akun? <span style="color:#FF6B6B;font-weight:700">Masuk di sini</span></div>
     </div>
