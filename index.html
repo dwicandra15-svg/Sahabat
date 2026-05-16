@@ -3818,15 +3818,32 @@ let currentProfil = null;
 fbAuth.onAuthStateChanged(async user => {
   if(user){
     currentUser = user;
-    // Ambil role dari database
     const snap = await fbDb.ref('users/'+user.uid).once('value');
     const data = snap.val();
     if(data){
+      // Cek status pending
+      if(data.status === 'pending'){
+        await fbAuth.signOut();
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('auth-screen').innerHTML = `
+          <div class="auth-card" style="text-align:center">
+            <div style="font-size:56px;margin-bottom:16px">⏳</div>
+            <h2 style="font-family:Poppins,sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:8px">Menunggu Persetujuan</h2>
+            <p style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:20px">
+              Akun <b style="color:#fff">${data.nama}</b> sebagai <b style="color:#FF6B6B">${data.role}</b><br>
+              sedang menunggu persetujuan wali kelas.<br><br>
+              Hubungi wali kelas untuk mempercepat proses.
+            </p>
+            <button class="auth-btn" onclick="location.reload()">↩ Coba Login Lagi</button>
+          </div>
+          <div style="margin-top:16px;font-size:11px;color:rgba(255,255,255,.2)">Supported by D.D Candra 2026</div>
+        `;
+        return;
+      }
       currentRole   = data.role;
       currentProfil = data;
       masukApp();
     } else {
-      // User ada di Auth tapi tidak ada di DB → logout paksa
       fbAuth.signOut();
     }
   } else {
@@ -3849,6 +3866,10 @@ function masukApp(){
   sembunyiAuthScreen();
   updateUIByRole();
   syncFromFirebase();
+  // Listener notifikasi approval (hanya wali kelas)
+  if(currentRole === 'walikelas'){
+    syncNotifikasiApproval();
+  }
   showToast('👋 Halo, '+(currentProfil?.nama||currentUser.email)+'!');
 }
 
@@ -4069,7 +4090,7 @@ async function doDaftar(){
   const kode  = document.getElementById('daftar-kode').value.trim().toUpperCase();
   const btn   = document.getElementById('btn-daftar');
 
-  // Validasi
+  // Validasi dasar
   if(!nama){ showAuthError('Nama lengkap wajib diisi!'); return; }
   if(role==='siswa'&&!nisn){ showAuthError('NISN wajib diisi untuk siswa!'); return; }
   if(role!=='siswa'&&!email){ showAuthError('Email wajib diisi!'); return; }
@@ -4077,10 +4098,16 @@ async function doDaftar(){
   if(pass!==pass2){ showAuthError('Password tidak sama!'); return; }
   if(!kode){ showAuthError('Kode undangan wajib diisi!'); return; }
 
-  // Validasi kode undangan
-  const expectedKode = KODE_UNDANGAN[role]?.toUpperCase();
-  if(kode !== expectedKode){
-    showAuthError('Kode undangan tidak valid! Hubungi wali kelas.');
+  // Ambil kode dari Firebase (bisa diganti wali kelas)
+  const cfgSnap = await fbDb.ref('config').once('value');
+  const cfg = cfgSnap.val() || {};
+  const kodeMap = {
+    pengurus : (cfg.kode_pengurus  || KODE_UNDANGAN.pengurus ).toUpperCase(),
+    bendahara: (cfg.kode_bendahara || KODE_UNDANGAN.bendahara).toUpperCase(),
+    siswa    : (cfg.kode_siswa     || KODE_UNDANGAN.siswa    ).toUpperCase(),
+  };
+  if(kode !== kodeMap[role]){
+    showAuthError('❌ Kode undangan tidak valid! Hubungi wali kelas.');
     return;
   }
 
@@ -4088,30 +4115,220 @@ async function doDaftar(){
   showAuthError('');
 
   try {
-    let authEmail = role==='siswa' ? nisn+'@sahabat.app' : email;
+    const authEmail = role==='siswa' ? nisn+'@sahabat.app' : email;
     const cred = await fbAuth.createUserWithEmailAndPassword(authEmail, pass);
     const uid  = cred.user.uid;
 
-    // Simpan ke database
-    const userData = { uid, nama, role, createdAt: Date.now() };
-    if(role==='siswa') userData.nisn = nisn;
-    else userData.email = email;
+    // Pengurus & Bendahara → status PENDING dulu, tunggu approval wali kelas
+    const isPengurus = (role==='pengurus'||role==='bendahara');
+    const status = isPengurus ? 'pending' : 'aktif';
+
+    const userData = {
+      uid, nama, role, status,
+      nisn : role==='siswa' ? nisn : '',
+      email: role!=='siswa' ? email : '',
+      createdAt: Date.now()
+    };
 
     await fbDb.ref('users/'+uid).set(userData);
-    // Juga simpan profil
-    await fbDb.ref('profil/'+uid).set({ nama, role, nisn:nisn||'', email:email||'' });
-    // onAuthStateChanged handle sisanya
+    await fbDb.ref('profil/'+uid).set({ nama, role, status, nisn:nisn||'', email:email||'' });
+
+    // Kalau pengurus/bendahara → kirim notifikasi ke wali kelas
+    if(isPengurus){
+      const notifKey = fbDb.ref('notifikasi/'+WALI_KELAS_UID).push().key;
+      await fbDb.ref('notifikasi/'+WALI_KELAS_UID+'/'+notifKey).set({
+        id       : notifKey,
+        type     : 'approval_request',
+        uid      : uid,
+        nama     : nama,
+        role     : role,
+        email    : email,
+        dibaca   : false,
+        createdAt: Date.now()
+      });
+
+      // Logout dulu, tampilkan pesan tunggu approval
+      await fbAuth.signOut();
+      showAuthError('');
+      document.getElementById('auth-screen').innerHTML = `
+        <div class="auth-card" style="text-align:center">
+          <div style="font-size:56px;margin-bottom:16px">⏳</div>
+          <h2 style="font-family:Poppins,sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:8px">Menunggu Persetujuan</h2>
+          <p style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:20px">
+            Akun <b style="color:#fff">${nama}</b> sebagai <b style="color:#FF6B6B">${role}</b> telah didaftarkan.<br><br>
+            Wali kelas akan menerima notifikasi dan segera memberikan persetujuan.<br><br>
+            Cek kembali aplikasi setelah mendapat konfirmasi dari wali kelas.
+          </p>
+          <button class="auth-btn" onclick="location.reload()">↩ Kembali ke Login</button>
+        </div>
+        <div style="margin-top:16px;font-size:11px;color:rgba(255,255,255,.2)">Supported by D.D Candra 2026</div>
+      `;
+      return;
+    }
+
+    // Siswa → langsung masuk (onAuthStateChanged handle)
   } catch(e){
-    const msg = e.code==='auth/email-already-in-use'?'NISN/Email sudah terdaftar!':
-                e.code==='auth/weak-password'?'Password terlalu lemah':
+    const msg = e.code==='auth/email-already-in-use' ? 'NISN/Email sudah terdaftar!' :
+                e.code==='auth/weak-password'        ? 'Password terlalu lemah' :
                 'Pendaftaran gagal: '+e.message;
     showAuthError(msg);
     btn.disabled=false; btn.textContent='Buat Akun →';
   }
 }
 
-// ─── LOGOUT ───
-function doLogout(){
+// ════════════════════════════════════════════════════════
+// SISTEM APPROVAL PENGURUS
+// ════════════════════════════════════════════════════════
+
+let pendingList = [];
+
+function syncNotifikasiApproval(){
+  fbDb.ref('notifikasi/'+currentUser.uid).on('value', snap => {
+    const val = snap.val();
+    pendingList = val ? Object.values(val).filter(n=>n.type==='approval_request') : [];
+    const unread = pendingList.filter(n=>!n.dibaca).length;
+    updateApprovalBadge(unread);
+  });
+}
+
+function updateApprovalBadge(count){
+  // Badge di dashboard wali kelas
+  let badge = document.getElementById('approval-badge');
+  if(!badge){
+    // Inject badge ke header dashboard
+    const header = document.querySelector('#panel-dashboard .page-header') ||
+                   document.querySelector('#panel-dashboard .dash-hero');
+    if(header){
+      const btn = document.createElement('div');
+      btn.id = 'approval-banner';
+      btn.style.cssText = 'display:none';
+      header.parentNode.insertBefore(btn, header.nextSibling);
+    }
+  }
+  renderApprovalBanner(count);
+}
+
+function renderApprovalBanner(count){
+  let banner = document.getElementById('approval-banner');
+  if(!banner) return;
+  if(count === 0){ banner.style.display='none'; return; }
+  banner.style.cssText = `
+    background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(59,130,246,.18));
+    border:1.5px solid rgba(168,85,247,.4);border-radius:16px;
+    padding:14px 16px;margin:0 0 14px;cursor:pointer;display:flex;
+    align-items:center;gap:12px
+  `;
+  banner.innerHTML = `
+    <div style="width:42px;height:42px;border-radius:12px;background:rgba(168,85,247,.25);
+      display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔔</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800;color:#fff">${count} Permintaan Bergabung</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Pengurus/Bendahara menunggu persetujuan Anda</div>
+    </div>
+    <div style="background:rgba(168,85,247,.35);color:#c084fc;border:1px solid rgba(168,85,247,.5);
+      padding:6px 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">
+      Lihat →
+    </div>
+  `;
+  banner.onclick = () => bukaModalApproval();
+}
+
+function bukaModalApproval(){
+  // Tandai semua notif sebagai dibaca
+  pendingList.forEach(n=>{
+    if(!n.dibaca) fbDb.ref('notifikasi/'+currentUser.uid+'/'+n.id+'/dibaca').set(true);
+  });
+
+  const modal = document.getElementById('approval-modal');
+  const body  = document.getElementById('approval-modal-body');
+  if(!modal) return;
+
+  if(pendingList.length === 0){
+    body.innerHTML = `
+      <div style="text-align:center;padding:30px 0">
+        <div style="font-size:48px;margin-bottom:12px">✅</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">Tidak ada permintaan</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Semua sudah diproses</div>
+      </div>`;
+  } else {
+    const roleLabel = {pengurus:'📋 Pengurus Kelas', bendahara:'💰 Bendahara'};
+    body.innerHTML = pendingList.map(n => `
+      <div style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;
+        padding:16px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:46px;height:46px;border-radius:14px;
+            background:linear-gradient(135deg,#a855f7,#7c3aed);
+            display:flex;align-items:center;justify-content:center;
+            font-size:18px;font-weight:900;color:#fff;flex-shrink:0">
+            ${n.nama.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:800;color:#fff">${n.nama}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${n.email}</div>
+            <div style="margin-top:5px">
+              <span style="background:rgba(168,85,247,.2);color:#c084fc;border:1px solid rgba(168,85,247,.35);
+                padding:3px 10px;border-radius:8px;font-size:10px;font-weight:800">
+                ${roleLabel[n.role]||n.role}
+              </span>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);text-align:right;flex-shrink:0">
+            ${new Date(n.createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'short'})}
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button onclick="tolakPengurus('${n.uid}','${n.id}','${n.nama}')"
+            style="padding:11px;border-radius:12px;border:1.5px solid rgba(239,68,68,.4);
+              background:rgba(239,68,68,.1);color:#f87171;font-size:12px;font-weight:800;
+              cursor:pointer;font-family:Nunito,sans-serif">
+            ❌ Tolak
+          </button>
+          <button onclick="setujuiPengurus('${n.uid}','${n.id}','${n.nama}','${n.role}')"
+            style="padding:11px;border-radius:12px;border:none;
+              background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-size:12px;font-weight:800;
+              cursor:pointer;font-family:Nunito,sans-serif;box-shadow:0 3px 10px rgba(34,197,94,.35)">
+            ✅ Setujui
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+  modal.classList.add('open');
+}
+
+async function setujuiPengurus(uid, notifId, nama, role){
+  if(!confirm('Setujui '+nama+' sebagai '+role+'?')) return;
+  try {
+    // Update status → aktif
+    await fbDb.ref('users/'+uid).update({ status:'aktif' });
+    await fbDb.ref('profil/'+uid).update({ status:'aktif' });
+    // Hapus notifikasi
+    await fbDb.ref('notifikasi/'+currentUser.uid+'/'+notifId).remove();
+    // Kirim notif balik ke pengurus
+    const nk = fbDb.ref('notifikasi/'+uid).push().key;
+    await fbDb.ref('notifikasi/'+uid+'/'+nk).set({
+      id:nk, type:'approved', pesan:'Akun Anda telah disetujui oleh wali kelas!',
+      createdAt:Date.now(), dibaca:false
+    });
+    showToast('✅ '+nama+' berhasil disetujui sebagai '+role+'!');
+    bukaModalApproval(); // refresh
+  } catch(e){ showToast('❌ Gagal: '+e.message); }
+}
+
+async function tolakPengurus(uid, notifId, nama){
+  if(!confirm('Tolak dan hapus akun '+nama+'?')) return;
+  try {
+    // Hapus dari database
+    await fbDb.ref('users/'+uid).remove();
+    await fbDb.ref('profil/'+uid).remove();
+    // Hapus notifikasi
+    await fbDb.ref('notifikasi/'+currentUser.uid+'/'+notifId).remove();
+    showToast('🗑️ Akun '+nama+' ditolak dan dihapus.');
+    bukaModalApproval();
+  } catch(e){ showToast('❌ Gagal: '+e.message); }
+}
+
+
   fbAuth.signOut().then(()=>{ showToast('👋 Berhasil keluar!'); });
 }
 
@@ -4146,5 +4363,33 @@ window.addEventListener('load', ()=>{
 });
 
 </script>
+<!-- ══════ MODAL: Approval Pengurus ══════ -->
+<style>
+.approval-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:none;align-items:flex-end;justify-content:center}
+.approval-overlay.open{display:flex;animation:fadeIn .2s ease}
+.approval-box{background:var(--bg2);border-radius:24px 24px 0 0;width:100%;border-top:1px solid var(--border);animation:slideUp .3s ease;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:480px){.approval-overlay .approval-box{max-width:400px}}
+.approval-head{padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.approval-body{flex:1;overflow-y:auto;padding:16px 20px 24px}
+.approval-body::-webkit-scrollbar{display:none}
+</style>
+
+<div class="approval-overlay" id="approval-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="approval-box">
+    <div class="approval-head">
+      <div>
+        <div style="font-family:Poppins,sans-serif;font-size:16px;font-weight:800;color:#fff">🔔 Permintaan Bergabung</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Pengurus menunggu persetujuan Anda</div>
+      </div>
+      <button onclick="document.getElementById('approval-modal').classList.remove('open')"
+        style="width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.08);
+          border:none;color:var(--text2);font-size:16px;cursor:pointer;flex-shrink:0">✕</button>
+    </div>
+    <div class="approval-body" id="approval-modal-body">
+      <div style="text-align:center;padding:30px;color:var(--text3)">Memuat...</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
