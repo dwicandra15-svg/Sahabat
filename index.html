@@ -351,10 +351,6 @@ select.input-field option{background:#1a1740;color:#fff}
 }
 </style>
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
 <style>
 /* ══════ AUTH SCREEN ══════ */
 #auth-screen{position:fixed;inset:0;background:linear-gradient(160deg,#0f0c29 0%,#302b63 50%,#24243e 100%);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;flex-direction:column}
@@ -403,8 +399,8 @@ select.input-field option{background:#1a1740;color:#fff}
 
     <!-- Tabs -->
     <div class="auth-tabs">
-      <div class="auth-tab active" id="tab-masuk" onclick="authSwitchTab('masuk')">Masuk</div>
-      <div class="auth-tab" id="tab-daftar" onclick="authSwitchTab('daftar')">Daftar</div>
+      <div class="auth-tab active" id="tab-masuk" id="tab-masuk-div">Masuk</div>
+      <div class="auth-tab" id="tab-daftar">Daftar</div>
     </div>
 
     <!-- Error box -->
@@ -420,14 +416,14 @@ select.input-field option{background:#1a1740;color:#fff}
       </select>
       <input class="auth-input" id="login-id" placeholder="NISN / Email pengurus" type="text" autocomplete="username">
       <input class="auth-input" id="login-pass" placeholder="Password (min 8 digit)" type="password" autocomplete="current-password">
-      <button class="auth-btn" onclick="doLogin()" id="btn-login">Masuk →</button>
+      <button class="auth-btn" id="btn-login">Masuk →</button>
       <div class="auth-divider">atau</div>
-      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer" onclick="authSwitchTab('daftar')">Belum punya akun? <span style="color:#FF6B6B;font-weight:700">Daftar di sini</span></div>
+      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer" id="link-ke-daftar" style="cursor:pointer">Belum punya akun? <span style="color:#FF6B6B;font-weight:700">Daftar di sini</span></div>
     </div>
 
     <!-- ─── FORM DAFTAR ─── -->
     <div id="form-daftar" style="display:none">
-      <select class="auth-role-select" id="daftar-role" onchange="onDaftarRoleChange()">
+      <select class="auth-role-select" id="daftar-role">
         <option value="siswa">👤 Daftar sebagai Siswa</option>
         <option value="pengurus">📋 Daftar sebagai Pengurus</option>
         <option value="bendahara">💰 Daftar sebagai Bendahara</option>
@@ -438,9 +434,9 @@ select.input-field option{background:#1a1740;color:#fff}
       <input class="auth-input" id="daftar-pass" placeholder="Password (min 8 karakter)" type="password">
       <input class="auth-input" id="daftar-pass2" placeholder="Konfirmasi Password" type="password">
       <input class="auth-input" id="daftar-kode" placeholder="Kode Undangan Kelas" type="text">
-      <button class="auth-btn" onclick="doDaftar()" id="btn-daftar">Buat Akun →</button>
+      <button class="auth-btn" id="btn-daftar">Buat Akun →</button>
       <div class="auth-divider">atau</div>
-      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer" onclick="authSwitchTab('masuk')">Sudah punya akun? <span style="color:#FF6B6B;font-weight:700">Masuk di sini</span></div>
+      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);cursor:pointer" id="tab-masuk-div">Sudah punya akun? <span style="color:#FF6B6B;font-weight:700">Masuk di sini</span></div>
     </div>
   </div>
   <div style="margin-top:16px;font-size:11px;color:rgba(255,255,255,.2);text-align:center">Supported by D.D Candra 2026</div>
@@ -4338,6 +4334,15 @@ window.addEventListener('load', ()=>{
   onDaftarRoleChange();
 
   // Enter key support
+  // Pasang event listener auth screen
+  document.getElementById('btn-login')?.addEventListener('click', doLogin);
+  document.getElementById('btn-daftar')?.addEventListener('click', doDaftar);
+  document.getElementById('tab-masuk')?.addEventListener('click', ()=>authSwitchTab('masuk'));
+  document.getElementById('tab-daftar')?.addEventListener('click', ()=>authSwitchTab('daftar'));
+  document.getElementById('tab-masuk-div')?.addEventListener('click', ()=>authSwitchTab('masuk'));
+  document.getElementById('link-ke-daftar')?.addEventListener('click', ()=>authSwitchTab('daftar'));
+  document.getElementById('link-ke-masuk')?.addEventListener('click', ()=>authSwitchTab('masuk'));
+  document.getElementById('daftar-role')?.addEventListener('change', onDaftarRoleChange);
   document.getElementById('login-pass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
   document.getElementById('daftar-kode')?.addEventListener('keydown', e=>{ if(e.key==='Enter') doDaftar(); });
 
