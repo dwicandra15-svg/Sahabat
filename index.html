@@ -3475,40 +3475,66 @@ let appConfig={
 };
 try{const saved=localStorage.getItem('kelas11config');if(saved)appConfig=Object.assign(appConfig,JSON.parse(saved));}catch(e){}
 
-function saveConfig(){try{localStorage.setItem('kelas11config',JSON.stringify(appConfig));}catch(e){}}
+function saveConfig(){
+  try{
+    localStorage.setItem('kelas11config', JSON.stringify(appConfig));
+    // Simpan icon images terpisah (bisa besar)
+    localStorage.setItem('kelas11icons', JSON.stringify(iconImageData));
+    // Simpan logo
+    if(cfgLogoDataUrl) localStorage.setItem('kelas11logo', cfgLogoDataUrl);
+    else localStorage.removeItem('kelas11logo');
+  }catch(e){console.warn('Save config error:',e);}
+}
+
+function loadSavedConfig(){
+  try{
+    const saved=localStorage.getItem('kelas11config');
+    if(saved) appConfig=Object.assign(appConfig,JSON.parse(saved));
+    const savedIcons=localStorage.getItem('kelas11icons');
+    if(savedIcons) Object.assign(iconImageData, JSON.parse(savedIcons));
+    const savedLogo=localStorage.getItem('kelas11logo');
+    if(savedLogo) cfgLogoDataUrl=savedLogo;
+  }catch(e){console.warn('Load config error:',e);}
+}
 
 function applyConfig(){
   // Identity
-  const g=document.getElementById('kelas-grade');if(g)g.textContent=appConfig.grade;
-  const j=document.getElementById('kelas-jurusan');if(j)j.textContent=appConfig.jurusan;
-  const t=document.getElementById('kelas-title');if(t)t.textContent=appConfig.title;
-  const s=document.getElementById('kelas-subtitle');if(s)s.textContent=appConfig.subtitle;
+  const g=document.getElementById('kelas-grade');if(g)g.textContent=appConfig.grade||'XI';
+  const j=document.getElementById('kelas-jurusan');if(j)j.textContent=appConfig.jurusan||'Teknologi';
+  const t=document.getElementById('kelas-title');if(t)t.textContent=appConfig.title||'KELAS 11 TEKNO 🚀';
+  const s=document.getElementById('kelas-subtitle');if(s)s.textContent=appConfig.subtitle||'TA 2025/2026';
   // Watermarks
   document.querySelectorAll('.watermark').forEach(el=>{
-    el.innerHTML='Supported by <span>'+appConfig.watermark+'</span>';
+    el.innerHTML='Supported by <span>'+(appConfig.watermark||'D.D Candra 2026')+'</span>';
   });
-  // Icons on dashboard
+  // Hero logo
+  const heroImg=document.getElementById('hero-logo-img');
+  if(heroImg){
+    if(cfgLogoDataUrl){heroImg.src=cfgLogoDataUrl;heroImg.style.display='block';}
+    else{heroImg.src='';heroImg.style.display='none';}
+  }
+  // Icons — gambar atau emoji
   Object.keys(appConfig.icons).forEach(key=>{
     const el=document.getElementById('icon-'+key);
-    if(el)el.textContent=appConfig.icons[key];
+    if(!el)return;
+    if(iconImageData[key]){
+      el.innerHTML=`<img src="${iconImageData[key]}" style="width:26px;height:26px;object-fit:cover;border-radius:6px;display:block;margin:0 auto" alt="">`;
+    } else {
+      el.textContent=appConfig.icons[key]||'❓';
+    }
   });
-  // Theme primary color (CSS var)
-  document.documentElement.style.setProperty('--primary',appConfig.primary);
-  // Hero gradient & btn-primary uses --primary via box-shadow
+  // Theme
+  document.documentElement.style.setProperty('--primary',appConfig.primary||'#FF6B6B');
   document.querySelectorAll('.btn-primary,.nav-center-btn').forEach(el=>{
-    el.style.background=appConfig.grad;
+    el.style.background=appConfig.grad||'linear-gradient(135deg,#FF6B6B,#FF8E53)';
   });
   document.querySelectorAll('.dash-hero').forEach(el=>{
-    el.style.background=appConfig.grad;
+    el.style.background=appConfig.grad||'linear-gradient(135deg,#FF6B6B,#FF8E53)';
   });
-  // Active nav item color
-  document.documentElement.style.setProperty('--primary',appConfig.primary);
-  // BG
-  document.documentElement.style.setProperty('--bg',appConfig.bg);
-  document.documentElement.style.setProperty('--bg2',appConfig.bg2||appConfig.bg);
-  document.documentElement.style.setProperty('--bg3',appConfig.bg3||appConfig.bg);
-  document.body.style.background=appConfig.bg;
-  // Page title
+  document.documentElement.style.setProperty('--bg',appConfig.bg||'#0f0c29');
+  document.documentElement.style.setProperty('--bg2',appConfig.bg2||'#1a1740');
+  document.documentElement.style.setProperty('--bg3',appConfig.bg3||'#231f5a');
+  document.body.style.background=appConfig.bg||'#0f0c29';
   document.title=appConfig.title||'KELAS 11 TEKNOLOGI 🚀';
 }
 
@@ -3663,10 +3689,11 @@ function cfgHandleIkonImg(e,key){
     // Update icon on dashboard immediately
     const iconEl=document.getElementById('icon-'+key);
     if(iconEl){
-      iconEl.innerHTML=`<img src="${ev.target.result}" style="width:26px;height:26px;object-fit:cover;border-radius:6px" alt="">`;
+      iconEl.innerHTML=`<img src="${ev.target.result}" style="width:26px;height:26px;object-fit:cover;border-radius:6px;display:block;margin:0 auto" alt="">`;
     }
+    saveConfig(); // ← simpan ke localStorage agar tidak hilang saat refresh
     cfgRenderIconCards();
-    showToast('✅ Logo ikon '+key+' berhasil diupload!');
+    showToast('✅ Logo '+key+' berhasil disimpan!');
   };
   reader.readAsDataURL(file);
 }
@@ -3775,6 +3802,7 @@ function resetTema(){cfgResetTema();}
 function prefillIdentitas(){cfgPrefill();}
 
 // Apply config on load
+loadSavedConfig();
 applyConfig();
 prefillIdentitas();
 
