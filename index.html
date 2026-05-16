@@ -8,21 +8,27 @@
 <meta name="theme-color" content="#0f0c29">
 <title>KELAS 11 TEKNOLOGI 🚀</title>
 <script>
-// Auth proxy — harus di head agar tersedia sebelum HTML dirender
+// Auth proxy — di head, pasti tersedia sebelum HTML dirender
 function _authProxy(fnName){
   var args = Array.prototype.slice.call(arguments, 1);
+  console.log('[AUTH] _authProxy dipanggil:', fnName, '| window.'+fnName+':', typeof window[fnName]);
   if(typeof window[fnName]==='function'){
     window[fnName].apply(null, args);
   } else {
+    // Fungsi belum siap, tunggu
     var tries=0;
+    var btn = document.getElementById('btn-login') || document.getElementById('btn-daftar');
+    if(btn){ btn.textContent = 'Memuat...'; btn.disabled = true; }
     var iv=setInterval(function(){
       tries++;
       if(typeof window[fnName]==='function'){
         clearInterval(iv);
+        if(btn){ btn.disabled = false; btn.textContent = fnName==='doLogin'?'Masuk →':'Buat Akun →'; }
         window[fnName].apply(null, args);
       } else if(tries>100){
         clearInterval(iv);
-        console.error('Fungsi '+fnName+' tidak ditemukan setelah 10 detik');
+        if(btn){ btn.disabled = false; btn.textContent = fnName==='doLogin'?'Masuk →':'Buat Akun →'; }
+        alert('Koneksi lambat. Coba refresh halaman (Ctrl+Shift+R)');
       }
     },100);
   }
@@ -407,6 +413,9 @@ select.input-field option{background:#1a1740;color:#fff}
 /* Online indicator */
 .online-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;margin-right:4px;box-shadow:0 0 6px #4ade80}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <!-- ══════ AUTH SCREEN ══════ -->
@@ -2498,10 +2507,7 @@ function downloadRekapPDF(){
     thead th{padding:9px 10px;text-align:left;font-size:12px;font-weight:700}
     .footer{text-align:center;font-size:10px;color:#94a3b8;margin-top:16px;border-top:1px solid #e2e8f0;padding-top:10px}
     @media print{body{padding:0}}
-  </style><!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  </style><!-- Firebase SDK (loaded in head) -->
 
 <style>
 /* ══════ AUTH SCREEN ══════ */
@@ -4067,6 +4073,7 @@ function showAuthError(msg){
 
 // ─── LOGIN ───
 async function doLogin(){
+  console.log('[AUTH] doLogin dipanggil');
   const role  = document.getElementById('login-role').value;
   const id    = document.getElementById('login-id').value.trim();
   const pass  = document.getElementById('login-pass').value;
@@ -4346,8 +4353,21 @@ async function tolakPengurus(uid, notifId, nama){
 }
 
 
+// ─── LOGOUT ───
+function doLogout(){
   fbAuth.signOut().then(()=>{ showToast('👋 Berhasil keluar!'); });
 }
+
+// ── Expose semua fungsi ke window SEGERA ──
+window.doLogin            = doLogin;
+window.doDaftar           = doDaftar;
+window.doLogout           = doLogout;
+window.authSwitchTab      = authSwitchTab;
+window.onDaftarRoleChange = onDaftarRoleChange;
+window.bukaModalApproval  = bukaModalApproval;
+window.setujuiPengurus    = setujuiPengurus;
+window.tolakPengurus      = tolakPengurus;
+console.log('[SAHABAT] ✅ Auth functions ready. typeof doLogin:', typeof window.doLogin);
 
 // ─── Tambah tombol logout di sheet profil ───
 window.addEventListener('load', ()=>{
