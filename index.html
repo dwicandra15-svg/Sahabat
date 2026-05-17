@@ -480,15 +480,36 @@ select.input-field option{background:#1a1740;color:#fff}
           <div class="hstat"><div class="hval" id="db-avg-nilai">87.4</div><div class="hlbl">Avg Nilai</div></div>
         </div>
       </div>
-      <div class="quick-grid" id="quick-grid">
-        <div class="qa" onclick="goTo('kas')"><span class="qa-icon" id="icon-kas">💰</span><div class="qa-lbl">Kas</div></div>
-        <div class="qa" onclick="goTo('chat')"><span class="qa-icon" id="icon-chat">💬</span><div class="qa-lbl">Chat</div></div>
-        <div class="qa" onclick="goTo('jadwal')"><span class="qa-icon" id="icon-jadwal">📅</span><div class="qa-lbl">Jadwal</div></div>
-        <div class="qa" onclick="goTo('tugas')"><span class="qa-icon" id="icon-tugas">📚</span><div class="qa-lbl">Tugas</div></div>
-        <div class="qa" onclick="goTo('presensi')"><span class="qa-icon" id="icon-presensi">✅</span><div class="qa-lbl">Presensi</div></div>
-        <div class="qa" onclick="goTo('nilai')"><span class="qa-icon" id="icon-nilai">⭐</span><div class="qa-lbl">Nilai</div></div>
-        <div class="qa" onclick="goTo('pengumuman')"><span class="qa-icon" id="icon-pengumuman">📢</span><div class="qa-lbl">Pengumuman</div></div>
-        <div class="qa" onclick="showSheet('sheet-pengaturan')"><span class="qa-icon">⚙️</span><div class="qa-lbl">Pengaturan</div></div>
+      <!-- Shortcut HOME: 1 baris scroll horizontal, compact -->
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none" id="home-shortcuts">
+        <div class="qa" style="flex-shrink:0;min-width:72px;padding:12px 8px;border-radius:16px" onclick="goTo('kas')">
+          <span class="qa-icon home-icon" id="icon-kas" style="font-size:24px;display:block;margin-bottom:5px">💰</span>
+          <div class="qa-lbl" style="font-size:10px;white-space:nowrap">Kas</div>
+        </div>
+        <div class="qa" style="flex-shrink:0;min-width:72px;padding:12px 8px;border-radius:16px" onclick="goTo('presensi')">
+          <span class="qa-icon home-icon" id="icon-presensi" style="font-size:24px;display:block;margin-bottom:5px">✅</span>
+          <div class="qa-lbl" style="font-size:10px;white-space:nowrap">Presensi</div>
+        </div>
+        <div class="qa" style="flex-shrink:0;min-width:72px;padding:12px 8px;border-radius:16px" onclick="goTo('tugas')">
+          <span class="qa-icon home-icon" id="icon-tugas" style="font-size:24px;display:block;margin-bottom:5px">📚</span>
+          <div class="qa-lbl" style="font-size:10px;white-space:nowrap">Tugas</div>
+        </div>
+        <div class="qa" style="flex-shrink:0;min-width:72px;padding:12px 8px;border-radius:16px" onclick="goTo('pengumuman')">
+          <span class="qa-icon home-icon" id="icon-pengumuman" style="font-size:24px;display:block;margin-bottom:5px">📢</span>
+          <div class="qa-lbl" style="font-size:10px;white-space:nowrap">Pengumuman</div>
+        </div>
+        <div class="qa" style="flex-shrink:0;min-width:72px;padding:12px 8px;border-radius:16px" onclick="goTo('nilai')">
+          <span class="qa-icon home-icon" id="icon-nilai" style="font-size:24px;display:block;margin-bottom:5px">⭐</span>
+          <div class="qa-lbl" style="font-size:10px;white-space:nowrap">Nilai</div>
+        </div>
+        <div class="qa" style="flex-shrink:0;min-width:72px;padding:12px 8px;border-radius:16px" onclick="goTo('jadwal')">
+          <span class="qa-icon home-icon" id="icon-jadwal" style="font-size:24px;display:block;margin-bottom:5px">📅</span>
+          <div class="qa-lbl" style="font-size:10px;white-space:nowrap">Jadwal</div>
+        </div>
+        <div class="qa" style="flex-shrink:0;min-width:72px;padding:12px 8px;border-radius:16px" onclick="goTo('chat')">
+          <span class="qa-icon home-icon" id="icon-chat" style="font-size:24px;display:block;margin-bottom:5px">💬</span>
+          <div class="qa-lbl" style="font-size:10px;white-space:nowrap">Chat</div>
+        </div>
       </div>
 
       <!-- Banner Approval Pending — hanya tampil untuk walikelas jika ada request -->
@@ -984,8 +1005,11 @@ select.input-field option{background:#1a1740;color:#fff}
     <div class="nav-item" id="nav-presensi" onclick="goTo('presensi')">
       <i class="ti ti-checkbox"></i><div class="nav-lbl">Presensi</div>
     </div>
-    <div class="nav-item" id="nav-more" onclick="showSheet('sheet-more')">
-      <i class="ti ti-dots"></i><div class="nav-lbl">Lainnya</div>
+    <div class="nav-item" id="nav-more" onclick="showSheet('sheet-more')" style="position:relative">
+      <i class="ti ti-dots"></i>
+      <div class="nav-lbl">Lainnya</div>
+      <!-- Badge lonceng notifikasi approval -->
+      <div id="nav-bell-badge" style="display:none;position:absolute;top:6px;right:calc(50% - 18px);background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:800;align-items:center;justify-content:center">0</div>
     </div>
   </nav>
 </div>
@@ -1029,6 +1053,9 @@ select.input-field option{background:#1a1740;color:#fff}
       <div class="qa" onclick="closeSheet2('sheet-more');goTo('nilai')"><span class="qa-icon" id="more-icon-nilai">⭐</span><div class="qa-lbl">Nilai</div></div>
       <div class="qa" onclick="closeSheet2('sheet-more');goTo('pengumuman')"><span class="qa-icon" id="more-icon-pengumuman">📢</span><div class="qa-lbl">Pengumuman</div></div>
       <div class="qa" onclick="closeSheet2('sheet-more');goTo('jadwal')"><span class="qa-icon" id="more-icon-jadwal">📅</span><div class="qa-lbl">Jadwal</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');goTo('kas')"><span class="qa-icon" id="more-icon-kas">💰</span><div class="qa-lbl">Kas</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');goTo('presensi')"><span class="qa-icon" id="more-icon-presensi">✅</span><div class="qa-lbl">Presensi</div></div>
+      <div class="qa" onclick="closeSheet2('sheet-more');goTo('chat')"><span class="qa-icon" id="more-icon-chat">💬</span><div class="qa-lbl">Chat</div></div>
       <div class="qa" onclick="closeSheet2('sheet-more');showSheet('sheet-profil')"><span class="qa-icon">👤</span><div class="qa-lbl">Profil</div></div>
       <div class="qa" onclick="closeSheet2('sheet-more');showSheet('sheet-pengaturan')"><span class="qa-icon">⚙️</span><div class="qa-lbl">Pengaturan</div></div>
     </div>
@@ -1862,19 +1889,28 @@ function konfirmasiLogout(){
 }
 window.konfirmasiLogout = konfirmasiLogout;
 
-// ─── Update lonceng notifikasi di sheet-more ───
+// ─── Update lonceng notifikasi (bottom nav + sheet-more) ───
 function updateBellNotif(){
   const count = Object.keys(pendingApprovals).length;
+
+  // Badge di bottom nav "Lainnya"
+  const navBadge = document.getElementById('nav-bell-badge');
+  if(navBadge){
+    if(currentRole==='walikelas' && count>0){
+      navBadge.style.display='flex';
+      navBadge.textContent=count>9?'9+':count;
+    } else {
+      navBadge.style.display='none';
+    }
+  }
+
+  // Lonceng 🔔 di dalam sheet-more
   const bellBtn = document.getElementById('notif-bell-btn');
   const bellBadge = document.getElementById('notif-bell-badge');
   if(bellBtn) bellBtn.style.display = currentRole==='walikelas' ? 'block' : 'none';
   if(bellBadge){
-    if(count>0){
-      bellBadge.style.display='flex';
-      bellBadge.textContent=count;
-    } else {
-      bellBadge.style.display='none';
-    }
+    if(count>0){bellBadge.style.display='flex';bellBadge.textContent=count>9?'9+':count;}
+    else bellBadge.style.display='none';
   }
 }
 
@@ -3453,14 +3489,26 @@ function applyConfig(){
     if(cfgLogoDataUrl){heroImg.src=cfgLogoDataUrl;heroImg.style.display='block';}
     else{heroImg.src='';heroImg.style.display='none';}
   }
-  // Icons — gambar atau emoji
-  Object.keys(appConfig.icons).forEach(key=>{
-    const el=document.getElementById('icon-'+key);
-    if(!el)return;
-    if(iconImageData[key]){
-      el.innerHTML=`<img src="${iconImageData[key]}" style="width:26px;height:26px;object-fit:cover;border-radius:6px;display:block;margin:0 auto" alt="">`;
-    } else {
-      el.textContent=appConfig.icons[key]||'❓';
+  // Icons — sync semua lokasi (home shortcut + sheet-more) sekaligus
+  const allIconKeys = Object.keys(appConfig.icons);
+  allIconKeys.forEach(key=>{
+    // Home shortcut icon
+    const el = document.getElementById('icon-'+key);
+    if(el){
+      if(iconImageData[key]){
+        el.innerHTML=`<img src="${iconImageData[key]}" style="width:24px;height:24px;object-fit:cover;border-radius:6px;display:block;margin:0 auto" alt="">`;
+      } else {
+        el.textContent = appConfig.icons[key]||'❓';
+      }
+    }
+    // Sheet-more icon (same key, prefixed "more-icon-")
+    const el2 = document.getElementById('more-icon-'+key);
+    if(el2){
+      if(iconImageData[key]){
+        el2.innerHTML=`<img src="${iconImageData[key]}" style="width:22px;height:22px;object-fit:cover;border-radius:5px;display:block;margin:0 auto" alt="">`;
+      } else {
+        el2.textContent = appConfig.icons[key]||'❓';
+      }
     }
   });
   // Theme
@@ -3626,14 +3674,14 @@ function cfgHandleIkonImg(e,key){
   const reader=new FileReader();
   reader.onload=ev=>{
     iconImageData[key]=ev.target.result;
-    // Update icon on dashboard immediately
-    const iconEl=document.getElementById('icon-'+key);
-    if(iconEl){
-      iconEl.innerHTML=`<img src="${ev.target.result}" style="width:26px;height:26px;object-fit:cover;border-radius:6px;display:block;margin:0 auto" alt="">`;
-    }
-    saveConfig(); // ← simpan ke localStorage agar tidak hilang saat refresh
+    // Sync semua lokasi ikon sekaligus
+    ['icon-'+key, 'more-icon-'+key].forEach(elId=>{
+      const el=document.getElementById(elId);
+      if(el) el.innerHTML=`<img src="${ev.target.result}" style="width:24px;height:24px;object-fit:cover;border-radius:6px;display:block;margin:0 auto" alt="">`;
+    });
+    saveConfig();
     cfgRenderIconCards();
-    showToast('✅ Logo '+key+' berhasil disimpan!');
+    showToast('✅ Logo '+key+' berhasil disimpan & disinkronkan!');
   };
   reader.readAsDataURL(file);
 }
