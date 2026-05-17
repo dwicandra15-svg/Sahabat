@@ -477,7 +477,7 @@ select.input-field option{background:#1a1740;color:#fff}
         <div class="hero-stats">
           <div class="hstat"><div class="hval" id="db-total-siswa">34</div><div class="hlbl">Siswa</div></div>
           <div class="hstat"><div class="hval" id="db-hadir">32</div><div class="hlbl">Hadir Hari Ini</div></div>
-          <div class="hstat"><div class="hval" id="db-avg-nilai">87.4</div><div class="hlbl">Avg Nilai</div></div>
+          <div class="hstat"><div class="hval" id="db-avg-nilai">–</div><div class="hlbl">Avg Nilai</div></div>
         </div>
       </div>
       <!-- Shortcut HOME: 1 baris scroll horizontal, compact -->
@@ -918,8 +918,8 @@ select.input-field option{background:#1a1740;color:#fff}
       <!-- Hero avg -->
       <div class="nilai-avg" id="nilai-hero">
         <div class="avg-lbl">Rata-rata Nilai Kamu</div>
-        <div class="avg-val" id="nilai-rata">87.4</div>
-        <div class="avg-ket" id="nilai-predikat">🏆 Sangat Baik · Peringkat 3 Kelas</div>
+        <div class="avg-val" id="nilai-rata">–</div>
+        <div class="avg-ket" id="nilai-predikat">Belum ada data nilai</div>
       </div>
 
       <!-- Tabs Nilai -->
@@ -1432,7 +1432,7 @@ select.input-field option{background:#1a1740;color:#fff}
     <div class="card" style="margin-bottom:10px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center">
         <div><div style="font-size:20px;font-weight:900;font-family:'Poppins',sans-serif;color:#4ade80">18</div><div style="font-size:11px;color:var(--text3)">Hari Hadir</div></div>
-        <div><div style="font-size:20px;font-weight:900;font-family:'Poppins',sans-serif;color:#c084fc">87.4</div><div style="font-size:11px;color:var(--text3)">Avg Nilai</div></div>
+        <div><div style="font-size:20px;font-weight:900;font-family:'Poppins',sans-serif;color:#c084fc" id="profil-avg-nilai">–</div><div style="font-size:11px;color:var(--text3)">Avg Nilai</div></div>
       </div>
     </div>
     <button class="btn btn-ghost" style="width:100%;padding:12px" onclick="closeSheet2('sheet-profil')">Tutup Profil</button>
@@ -1954,10 +1954,13 @@ function renderDashboardPreview(){
       dbTugas.innerHTML=`<div class="empty-state" style="padding:16px"><div class="es-icon">✅</div><div class="es-title">Tidak ada tugas aktif</div></div>`;
     }
   }
-  // Update avg nilai di hero
+  // Update avg nilai di hero — tampilkan "–" kalau belum ada data
   const avgEl = document.getElementById('db-avg-nilai');
-  if(avgEl && typeof nilaiData!=='undefined' && nilaiData.length){
-    avgEl.textContent = hitungRata();
+  if(avgEl){
+    const r = (typeof nilaiData!=='undefined' && nilaiData.length) ? hitungRata() : '–';
+    avgEl.textContent = r;
+    const profilAvg = document.getElementById('profil-avg-nilai');
+    if(profilAvg) profilAvg.textContent = r;
   }
 }
 function goTo(panel){
@@ -3035,8 +3038,14 @@ function predikatNilai(r){
 
 function renderNilai(){
   const rata=hitungRata();
-  document.getElementById('nilai-rata').textContent=rata;
-  document.getElementById('nilai-predikat').textContent=predikatNilai(parseFloat(rata))+' · Peringkat 3 Kelas';
+  const rataStr=nilaiData.length?rata:'–';
+  document.getElementById('nilai-rata').textContent=rataStr;
+  document.getElementById('nilai-predikat').textContent=nilaiData.length?(predikatNilai(parseFloat(rata))+' · Peringkat 3 Kelas'):'Belum ada data nilai';
+  // Sync ke dashboard hero & profil
+  const dbAvg=document.getElementById('db-avg-nilai');
+  if(dbAvg) dbAvg.textContent=rataStr;
+  const profilAvg=document.getElementById('profil-avg-nilai');
+  if(profilAvg) profilAvg.textContent=rataStr;
   const hero=document.getElementById('nilai-hero');
   hero.style.background=parseFloat(rata)>=90?'linear-gradient(135deg,#22c55e,#15803d)':parseFloat(rata)>=80?'linear-gradient(135deg,#a855f7,#7c3aed)':'linear-gradient(135deg,#f97316,#ea580c)';
 
